@@ -1,6 +1,6 @@
 # Web
 
-```
+
 project
 │   README.md
 │   file001.txt    
@@ -17,7 +17,7 @@ project
 └───folder2
     │   file021.txt
     │   file022.txt
-```
+
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.1.3.
 
