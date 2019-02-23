@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DataService } from 'src/app/services/data.service';
 import { RoomIssue, Alert } from 'src/app/objects/alerts';
 import { SelectionModel } from '@angular/cdk/collections';
+import { AlertPromise } from 'selenium-webdriver';
 
 @Component({
   selector: 'alert-table',
@@ -34,6 +35,9 @@ export class AlertTableComponent implements OnInit, IDashPanel {
 
   issueData: MatTableDataSource<RoomIssue>;
   selection = new SelectionModel<Alert>(true, []);
+
+  filters: string[] = [];
+  filteredIssues: RoomIssue[] = [];
 
   issueColumns: string[] = ["icon", "roomID", "severity", "count", "types", "incident", "help-sent", "help-arrived", "responders"];
   alertColumns: string[] = ["select", "name", "type", "category", "message", "start-time", "end-time"];
@@ -65,9 +69,19 @@ export class AlertTableComponent implements OnInit, IDashPanel {
       this.route.params.subscribe(par => {
         this.roomID = par["roomID"];
       })
-      this.issueData = new MatTableDataSource([this.data.GetRoomIssue(this.roomID)]);
+
+      this.info = [this.data.GetRoomIssue(this.roomID)]
+
+      this.ApplyFilters();
+
+      this.issueData = new MatTableDataSource(this.filteredIssues);
     } else {
-      this.issueData = new MatTableDataSource(this.data.GetRoomIssues(this.chosenSeverity));
+
+      this.info = this.data.GetRoomIssues(this.chosenSeverity);
+
+      this.ApplyFilters();
+
+      this.issueData = new MatTableDataSource(this.filteredIssues);
     }
 
     this.data.issueEmitter.subscribe(() => {
@@ -153,5 +167,92 @@ export class AlertTableComponent implements OnInit, IDashPanel {
     if (urlParams.has("theme")) {
       return urlParams.get("theme") == "default"
     }
+  }
+
+  ApplyFilters() {
+    this.filteredIssues = this.info;
+    let temp: RoomIssue[] = [];
+
+    for(let filter of this.filters) {
+      for(let issue of this.filteredIssues) {
+        if(!temp.includes(issue)) {
+          if(issue.severity.toLowerCase() == filter.toLowerCase()) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.systemType.toLowerCase() == filter.toLowerCase()) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.roomID.toLowerCase() == filter.toLowerCase()) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.buildingID.toLowerCase() == filter.toLowerCase()) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.activeAlertTypes.includes(filter) || issue.activeAlertTypes.includes(filter.toLowerCase())) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.activeAlertCategories.includes(filter) || issue.activeAlertCategories.includes(filter.toLowerCase())) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.alertTypes.includes(filter) || issue.alertTypes.includes(filter.toLowerCase())) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.alertCategories.includes(filter) || issue.alertCategories.includes(filter.toLowerCase())) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.responders.includes(filter.toLowerCase()) || issue.responders.includes(filter)) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.issueTags.includes(filter.toLowerCase()) || issue.issueTags.includes(filter)) {
+            temp.push(issue);
+            continue;
+          }
+          if(issue.roomTags.includes(filter.toLowerCase()) || issue.roomTags.includes(filter)) {
+            temp.push(issue);
+            continue;
+          }
+          
+          if(issue.alerts != null && issue.alerts.length > 0) {
+            for(let alert of issue.alerts) {
+              if(alert.deviceID.toLowerCase() == filter.toLowerCase()) {
+                if(!temp.includes(issue)) {
+                  temp.push(issue);
+                  continue;
+                }
+              }
+              if(alert.deviceTags.includes(filter) || alert.deviceTags.includes(filter.toLowerCase())) {
+                if(!temp.includes(issue)) {
+                  temp.push(issue);
+                  continue;
+                }
+              }
+              if(alert.alertTags.includes(filter) || alert.alertTags.includes(filter.toLowerCase())) {
+                if(!temp.includes(issue)) {
+                  temp.push(issue);
+                  continue;
+                }
+              }
+              if(alert.alertID.toLowerCase() == filter.toLowerCase()) {
+                if(!temp.includes(issue)) {
+                  temp.push(issue);
+                  continue;
+                }
+              }
+            }
+          }
+        }
+      }
+      this.filteredIssues = temp
+    }
+    this.issueData = new MatTableDataSource(this.filteredIssues);
   }
 }

@@ -77,6 +77,32 @@ export class StringsService {
     }
   }
 
+  public AddFilter(event: MatChipInputEvent, filters: string[]): void {
+    if (filters == null || filters.length == 0) {
+      filters = [];
+    }
+
+    const input = event.input;
+    const value = event.value;
+
+    // Add our tag
+    if ((value || "").trim()) {
+      filters.push(value.trim());
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = "";
+    }
+  }
+
+  public RemoveFilter(tag: string, filters: string[]): void {
+    let index = filters.indexOf(tag);
+    if (index >= 0) {
+      filters.splice(index, 1);
+    }
+  }
+
   public Sharing = {
     true: "Sharing enabled",
     false: "Sharing disabled"
