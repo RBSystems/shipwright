@@ -28,6 +28,7 @@ export class DataService {
   roomToUIConfigMap: Map<string, UIConfig> = new Map();
 
   roomIssueList: RoomIssue[] = [];
+  roomIssuesMap: Map<string, RoomIssue[]> = new Map();
   closureCodes: string[] = [];
 
   staticDeviceList: StaticDevice[] = [];
@@ -221,11 +222,24 @@ export class DataService {
     }
   }
 
-  private async GetStoredRoomIssues() {    
+  private async GetStoredRoomIssues() {
     await this.api.GetAllIssues().then((issues) => {
       this.roomIssueList = issues
       console.log(issues);
+      this.SetRoomIssuesMap();
     })
+  }
+
+  private SetRoomIssuesMap() {
+    this.roomIssuesMap.clear();
+
+    for(let issue of this.roomIssueList) {
+      if(this.roomIssuesMap.get(issue.roomID) == null) {
+        this.roomIssuesMap.set(issue.roomID, [issue]);
+      } else {
+        this.roomIssuesMap.get(issue.roomID).push(issue);
+      }
+    }
   }
 
   private ListenForIssues() {
@@ -280,7 +294,7 @@ export class DataService {
       for(let rs of this.roomStatusList) {
         if(rs.roomID == roomID) {
           rs.deviceStates.push(sd)
-          rs.Update()
+          // rs.Update()
           added = true
         }
       }
@@ -289,7 +303,7 @@ export class DataService {
         let roomState = new RoomStatus()
         roomState.roomID = roomID
         roomState.deviceStates = [sd]
-        roomState.Update()
+        // roomState.Update()
         this.roomStatusList.push(roomState)
       }
     }
@@ -363,13 +377,8 @@ export class DataService {
     return false;
   }
 
-  GetRoomIssue(roomID): RoomIssue {
-    for(let issue of this.roomIssueList) {
-      if(issue.roomID == roomID) {
-        return issue;
-      }
-    }
-    return new RoomIssue();
+  GetRoomIssues(roomID): RoomIssue[] {
+    return this.roomIssuesMap.get(roomID);
   }
 
   GetStaticDevice(deviceID: string): StaticDevice {
@@ -399,7 +408,7 @@ export class DataService {
     return new BuildingStatus();
   }
 
-  GetRoomIssues(severity?: string): RoomIssue[] {
+  GetRoomIssuesBySeverity(severity?: string): RoomIssue[] {
     let temp: RoomIssue[] = [];
 
     if(severity == null || severity == AllAlerts || severity == undefined) {
