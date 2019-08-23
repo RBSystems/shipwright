@@ -78,13 +78,13 @@ func main() {
 	writeconfig := router.Group(
 		"",
 		auth.CheckHeaderBasedAuth,
-		echo.WrapMiddleware(auth.AuthenticateCASUser),
+		// echo.WrapMiddleware(auth.AuthenticateCASUser),
 		auth.AuthorizeRequest("write-config", "configuration", func(c echo.Context) string { return "all" }),
 	)
 	readconfig := router.Group(
 		"",
 		auth.CheckHeaderBasedAuth,
-		echo.WrapMiddleware(auth.AuthenticateCASUser),
+		// echo.WrapMiddleware(auth.AuthenticateCASUser),
 		auth.AuthorizeRequest("read-config", "configuration", func(c echo.Context) string { return "all" }),
 	)
 	/*
@@ -101,6 +101,9 @@ func main() {
 			auth.AuthorizeRequest("read-state", "configuration", func(c echo.Context) string { return "all" }),
 		)
 	*/
+
+	//Screenshots
+	router.POST("/screenshot", handlers.GetScreenshot)
 
 	router.GET("/actions", actions.DefaultActionManager().Info)
 	router.GET("/actions/trigger/:trigger", actions.DefaultActionManager().Config.ActionsByTrigger)
@@ -195,7 +198,7 @@ func main() {
 
 	router.Use(auth.CheckHeaderBasedAuth,
 		auth.CheckHeaderBasedAuth,
-		echo.WrapMiddleware(auth.AuthenticateCASUser),
+		// echo.WrapMiddleware(auth.AuthenticateCASUser),
 		auth.AuthorizeRequest("read-config", "configuration", func(c echo.Context) string { return "all" }),
 		middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:   "web-dist",
